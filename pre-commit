@@ -1,0 +1,95 @@
+#!/usr/local/bin/python3
+import subprocess
+import sys
+
+
+def print_header(text):
+    message = "{text} ]".format(text=text)
+    message += (80 - len(message)) * "-"
+    print(message)
+
+
+def outstanding_tags():
+    """
+    Raises an error if a file with an outstanding tag is found.
+
+    Returns:
+        str | None
+            Returns an error msg if any found.
+    """
+    cmd = ["grep", "-r", "TODO", "."]
+    matches = subprocess.check_output(cmd).decode("utf-8").split("\n")
+
+    exempt_file_substrs = ["flycheck", ".git/hooks"]
+
+    fpaths = [
+        x.strip() for x in matches if all(y not in x for y in exempt_file_substrs)
+    ]
+
+    fpaths = [x for x in fpaths if x]
+    if not fpaths:
+        return None
+
+    return "\t" + "\n\t".join(fpaths)
+
+
+def unstyled_black():
+    """
+    Raises an error if a file could be black formatted.
+
+    Returns:
+        str | None
+            Returns an error msg if any found.
+    """
+    cmd = ["black", "--diff", ".", "--quiet"]
+    output = subprocess.check_output(cmd).decode("utf-8")
+
+    if not any(line.startswith("---") for line in output.split("\n")):
+        return None
+
+    return "\tBlack violation(s) detected"
+
+
+def main(hooks_to_run):
+    """
+    Run hook suite.
+
+    Arguments
+        hooks_to_run: tuple
+            Hooks to run.
+    """
+    hook_funcs = {
+        "Outstanding Tags": outstanding_tags,
+        "Unstyled Black": unstyled_black,
+    }
+
+    print("Running hook suite...")
+
+    flag_error = False
+    for hook in hooks_to_run:
+        hook_function = hook_funcs[hook]
+
+        error_msg = hook_function()
+        if not error_msg:
+            continue
+
+        print_header(hook)
+        print(error_msg, end=2*'\n')
+        flag_error = True
+
+    if not flag_error:
+        sys.exit(0)
+
+    print_header("Warning(s) detected")
+    print(
+        "To continue commit either:\n"
+        "\t1. Resolve warning(s)\n"
+        "\t2. Modify `.git/hooks/pre-commit.HOOKS`\n"
+        "\t3. Bypass pre-push hook via -n flag."
+    )
+    sys.exit(1)
+
+
+if __name__ == "__main__":
+    HOOKS = ("Outstanding Tags", "Unstyled Black")
+    main(HOOKS)
