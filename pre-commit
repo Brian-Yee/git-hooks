@@ -50,20 +50,22 @@ def unstyled_black():
     return "\tBlack violation(s) detected"
 
 
-def main(hooks_to_run):
+def run_hook_suite(hooks_to_run):
     """
     Run hook suite.
 
     Arguments
         hooks_to_run: tuple
             Hooks to run.
+
+    Returns:
+        flag_error: bool
+            Return a flag if an error is detected.
     """
     hook_funcs = {
         "Outstanding Tags": outstanding_tags,
         "Unstyled Black": unstyled_black,
     }
-
-    print("Running hook suite...")
 
     flag_error = False
     for hook in hooks_to_run:
@@ -74,8 +76,22 @@ def main(hooks_to_run):
             continue
 
         print_header(hook)
-        print(error_msg, end=2*'\n')
+        print(error_msg, end=2 * "\n")
         flag_error = True
+
+    return flag_error
+
+
+def main(hooks_to_run):
+    """
+    Handle system level errors and messages.
+
+    Arguments
+        hooks_to_run: tuple
+            Hooks to run.
+    """
+    print("Running hook suite...")
+    flag_error = run_hook_suite(hooks_to_run)
 
     if not flag_error:
         sys.exit(0)
