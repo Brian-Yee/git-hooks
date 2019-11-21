@@ -12,3 +12,7 @@ resolve:
 .PHONY: clean
 clean:
 	rm -f todo.md python.py
+
+.PHONY: version
+version:
+	cp .git/hooks/pre-commit .

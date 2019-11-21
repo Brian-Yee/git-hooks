@@ -4,8 +4,20 @@ import sys
 
 
 def print_header(text):
+    """
+    Pretty print header formatting.
+
+    Argument
+        text: str
+            Text to pretty print as a header.
+
+    Returns:
+        str:
+            Pretty printed header.
+    """
     message = "{text} ]".format(text=text)
     message += (80 - len(message)) * "-"
+
     print(message)
 
 
@@ -20,7 +32,7 @@ def outstanding_tags():
     cmd = ["grep", "-r", "TODO", "."]
     matches = subprocess.check_output(cmd).decode("utf-8").split("\n")
 
-    exempt_file_substrs = ["flycheck", ".git/hooks"]
+    exempt_file_substrs = ["flycheck", ".git/hooks", "pre-commit"]
 
     fpaths = [
         x.strip() for x in matches if all(y not in x for y in exempt_file_substrs)
