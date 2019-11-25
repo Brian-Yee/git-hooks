@@ -1,6 +1,11 @@
+.PHONY: help
+help:
+	@echo "build      Construct repository to violate git hook."
+	@echo "resolve    Resolve any issues caught by git hook."
+	@echo "clean      Remove any artifacts"
 
-.PHONY: deps
-deps:
+.PHONY: build
+build:
 	echo "TO""DO catch this" > todo.md
 	echo "x =  1" > python.py
 
